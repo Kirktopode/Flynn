@@ -1,18 +1,20 @@
 import sys
 try:
     from bme280 import readBME280All
+    import csv
+    import math
+    import lcd_16x2 as LCD
     from mpu6050 import mpu6050
     import os
     from os import listdir
     from os.path import isfile, join
-    import csv
     import smbus
     import time
 
     mpu = mpu6050(0x68)
     bus = smbus.SMBus(1)
     nano_address = 0x04
-
+    LCD.init()
     def write_nano(value):
         bus.write_byte(nano_address, value)
         return -1
@@ -29,13 +31,13 @@ try:
         count += 1
     logfile = mydir + "/logs/log" + str(count) + ".csv"
     print(logfile)
-    
+
     nanonum = 0
     t = 0
-    print ('a["x"], a["y"], a["z"], g["x"], g["y"], g["z"], temp, p, nanonum, t')
+    print ('a["x"], a["y"], a["z"], g["x"], g["y"], g["z"], temp, p, nanonum, t, yaw, pitch, roll, altitude(relative), altitude(sea level)')
     with open(logfile, "w") as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=",")
-        csvwriter.writerow(['a["x"]', 'a["y"]', 'a["z"]', 'g["x"]', 'g["y"]', 'g["z"]', 'temp', 'p', nanonum, 't'])
+        csvwriter.writerow(['a["x"]', 'a["y"]', 'a["z"]', 'g["x"]', 'g["y"]', 'g["z"]', 'temp', 'p', nanonum, 't', 'yaw','pitch','roll', 'altitude(relative)', 'altitude(sea level)'])
         csvfile.close()
     while True:
         with open(logfile, "a") as csvfile:
@@ -60,10 +62,13 @@ try:
             except:
                 print("error")
             # sleep one second
-            time.sleep(0.5)
-            t += 0.5
-            csvwriter.writerow([a["x"], a["y"], a["z"], g["x"], g["y"], g["z"], temp, p, nanonum, t])
-            print (a["x"], a["y"], a["z"], g["x"], g["y"], g["z"], temp, p, nanonum, t)
+            roll =  math.degrees(math.atan2(a["y"], a["z"]))
+            pitch = math.degrees(math.atan2(-a["x"], a["z"]))
+            yaw = g["z"]
+            time.sleep(0.1)
+            t += 0.1
+            csvwriter.writerow([a["x"], a["y"], a["z"], g["x"], g["y"], g["z"], temp, p, nanonum, t, yaw, pitch, roll])
+            print (a["x"], a["y"], a["z"], g["x"], g["y"], g["z"], temp, p, nanonum, t, yaw, pitch, roll)
             csvfile.close()
 except Exception as e:
     exc_type, exc_obj, exc_tb = sys.exc_info()
