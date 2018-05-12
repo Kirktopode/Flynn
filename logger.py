@@ -1,24 +1,24 @@
+import sys
 try:
     from bme280 import readBME280All
     from mpu6050 import mpu6050
     import os
     from os import listdir
     from os.path import isfile, join
-    import sys
     import csv
     import smbus
     import time
 
-    mpu = mpu6050()
+    mpu = mpu6050(0x68)
     bus = smbus.SMBus(1)
     nano_address = 0x04
 
     def write_nano(value):
-        bus.write_byte(address, value)
+        bus.write_byte(nano_address, value)
         return -1
 
     def read_nano():
-        number = bus.read_byte(address)
+        number = bus.read_byte(nano_address)
         return number
 
 
@@ -27,15 +27,19 @@ try:
     count = 0
     while "log" + str(count) + ".csv" in logfiles:
         count += 1
-    logfile = "log" + str(count) + ".csv"
-
+    logfile = mydir + "/logs/log" + str(count) + ".csv"
+    print(logfile)
+    
     nanonum = 0
     t = 0
-    print ('a["x"], a["y"], a["z"], g["x"], g["y"], g["z"], temp, p, t')
+    print ('a["x"], a["y"], a["z"], g["x"], g["y"], g["z"], temp, p, nanonum, t')
     with open(logfile, "w") as csvfile:
-        csv.writerow(['a["x"]', 'a["y"]', 'a["z"]', 'g["x"]', 'g["y"]', 'g["z"]', 'temp', 'p', 't'], csvfile, delimiter=",")
+        csvwriter = csv.writer(csvfile, delimiter=",")
+        csvwriter.writerow(['a["x"]', 'a["y"]', 'a["z"]', 'g["x"]', 'g["y"]', 'g["z"]', 'temp', 'p', nanonum, 't'])
+        csvfile.close()
     while True:
         with open(logfile, "a") as csvfile:
+            csvwriter = csv.writer(csvfile, delimiter=",")
             try:
                 a = mpu.get_accel_data(True)
             except:
@@ -51,15 +55,16 @@ try:
                 p = -999
                 h = -999
             try:
-                writeNumber(nanonum)
-                if readNumber() == nanonum: nanonum += 1
+                write_nano(nanonum)
+                if read_nano() == nanonum: nanonum += 1
             except:
-                pass
+                print("error")
             # sleep one second
             time.sleep(0.5)
             t += 0.5
-                csv.writerow([a["x"], a["y"], a["z"], g["x"], g["y"], g["z"], temp, p, t], csvfile, delimiter=",")
-            print (a["x"], a["y"], a["z"], g["x"], g["y"], g["z"], temp, p, t)
+            csvwriter.writerow([a["x"], a["y"], a["z"], g["x"], g["y"], g["z"], temp, p, nanonum, t])
+            print (a["x"], a["y"], a["z"], g["x"], g["y"], g["z"], temp, p, nanonum, t)
+            csvfile.close()
 except Exception as e:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     print(exc_type, exc_obj, exc_tb.tb_lineno)
