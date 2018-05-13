@@ -23,6 +23,9 @@ try:
         number = bus.read_byte(nano_address)
         return number
 
+    def get_altitude(pressure, baseline=1013.25):
+        return 44330.0 * (1.0 - (pressure / baseline)**(1.0 / 5.255))
+
 
     mydir = "/".join(os.path.abspath(__file__).split("/")[:-1])
     logfiles = [f for f in listdir(mydir + "/logs") if isfile(join(mydir + "/logs", f))]
@@ -34,6 +37,8 @@ try:
 
     nanonum = 0
     t = 0
+    temp, baseline_p, h = readBME280All()
+
     print ('a["x"], a["y"], a["z"], g["x"], g["y"], g["z"], temp, p, nanonum, t, yaw, pitch, roll, altitude(relative), altitude(sea level)')
     with open(logfile, "w") as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=",")
@@ -65,10 +70,14 @@ try:
             roll =  math.degrees(math.atan2(a["y"], a["z"]))
             pitch = math.degrees(math.atan2(-a["x"], a["z"]))
             yaw = g["z"]
+            alt = get_altitude(p)
+            alt_rel = get_altitude(p, baseline_p)
+            LCD.lcd_string("y:%.0f p:%.0f r:%.0f" % (yaw, pitch, roll),LCD_LINE_1)
+            LCD.lcd_string("a:%.0f r:%.0f" % (alt, alt_rel),LCD_LINE_2)
             time.sleep(0.1)
             t += 0.1
-            csvwriter.writerow([a["x"], a["y"], a["z"], g["x"], g["y"], g["z"], temp, p, nanonum, t, yaw, pitch, roll])
-            print (a["x"], a["y"], a["z"], g["x"], g["y"], g["z"], temp, p, nanonum, t, yaw, pitch, roll)
+            csvwriter.writerow([a["x"], a["y"], a["z"], g["x"], g["y"], g["z"], temp, p, nanonum, t, yaw, pitch, roll, alt_rel, alt])
+            print (a["x"], a["y"], a["z"], g["x"], g["y"], g["z"], temp, p, nanonum, t, yaw, pitch, roll, alt_rel, alt)
             csvfile.close()
 except Exception as e:
     exc_type, exc_obj, exc_tb = sys.exc_info()
