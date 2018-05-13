@@ -72,8 +72,8 @@ try:
             yaw = g["z"]
             alt = get_altitude(p)
             alt_rel = get_altitude(p, baseline_p)
-            LCD.lcd_string("y:%.0f p:%.0f r:%.0f" % (yaw, pitch, roll),LCD_LINE_1)
-            LCD.lcd_string("a:%.0f r:%.0f" % (alt, alt_rel),LCD_LINE_2)
+            LCD.lcd_string("y:%.0fp:%.0fr:%.0f" % (yaw, pitch, roll),LCD_LINE_1)
+            LCD.lcd_string("a:%.0fr:%.0f" % (alt, alt_rel),LCD_LINE_2)
             time.sleep(0.1)
             t += 0.1
             csvwriter.writerow([a["x"], a["y"], a["z"], g["x"], g["y"], g["z"], temp, p, nanonum, t, yaw, pitch, roll, alt_rel, alt])
