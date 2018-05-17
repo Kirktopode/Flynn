@@ -119,6 +119,7 @@ def lcd_init(rs=26, e=19, d4=21, d5=20, d6=16, d7=12):
   global LCD_D5
   global LCD_D6
   global LCD_D7
+  GPIO.setmode(GPIO.BCM)
   LCD_RS = rs
   LCD_E  = e
   LCD_D4 = d4

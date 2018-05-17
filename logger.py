@@ -14,7 +14,7 @@ try:
     mpu = mpu6050(0x68)
     bus = smbus.SMBus(1)
     nano_address = 0x04
-    LCD.init()
+    LCD.lcd_init()
     def write_nano(value):
         bus.write_byte(nano_address, value)
         return -1
@@ -67,13 +67,13 @@ try:
             except:
                 print("error")
             # sleep one second
-            roll =  math.degrees(math.atan2(a["y"], a["z"]))
-            pitch = math.degrees(math.atan2(-a["x"], a["z"]))
+            pitch =  math.degrees(math.atan2(a["y"], a["z"]))
+            roll = math.degrees(math.atan2(-a["x"], a["z"]))
             yaw = g["z"]
             alt = get_altitude(p)
             alt_rel = get_altitude(p, baseline_p)
-            LCD.lcd_string("y:%.0fp:%.0fr:%.0f" % (yaw, pitch, roll),LCD_LINE_1)
-            LCD.lcd_string("a:%.0fr:%.0f" % (alt, alt_rel),LCD_LINE_2)
+            LCD.lcd_string("y:%.0f p:%.0f r:%.0f" % (yaw, pitch, roll),LCD.LCD_LINE_1)
+            LCD.lcd_string("a:%.0f  ar:%.0f" % (alt, alt_rel),LCD.LCD_LINE_2)
             time.sleep(0.1)
             t += 0.1
             csvwriter.writerow([a["x"], a["y"], a["z"], g["x"], g["y"], g["z"], temp, p, nanonum, t, yaw, pitch, roll, alt_rel, alt])
