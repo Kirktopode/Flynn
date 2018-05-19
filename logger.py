@@ -37,7 +37,12 @@ try:
 
     nanonum = 0
     t = 0
-    temp, baseline_p, h = readBME280All()
+    baseline_p = 0
+    for i in range(50):
+        temp, p, h = readBME280All()
+        baseline_p += p
+
+    baseline_p /= 50
 
     print ('a["x"], a["y"], a["z"], g["x"], g["y"], g["z"], temp, p, nanonum, t, yaw, pitch, roll, altitude(relative), altitude(sea level)')
     with open(logfile, "w") as csvfile:
@@ -56,7 +61,17 @@ try:
             except:
                 g = {"x":-999, "y":-999, "z":-999}
             try:
-                temp, p, h = readBME280All()
+                temp = 0
+                p = 0
+                h = 0
+		for i in range(10):
+                    temp_i, p_i, h_i = readBME280All()
+                    temp += temp_i
+                    p += p_i
+                    h += h_i
+                temp /= 10
+                p /= 10
+                h /= 10
             except:
                 temp = -999
                 p = -999
@@ -72,10 +87,8 @@ try:
             yaw = g["z"]
             alt = get_altitude(p)
             alt_rel = get_altitude(p, baseline_p)
-            LCD.lcd_string("y:%.0f p:%.0f r:%.0f" % (yaw, pitch, roll),LCD.LCD_LINE_1)
-            LCD.lcd_string("a:%.0f  ar:%.0f" % (alt, alt_rel),LCD.LCD_LINE_2)
-            time.sleep(0.1)
-            t += 0.1
+            LCD.lcd_string("Rel. Altitude",LCD.LCD_LINE_1)
+            LCD.lcd_string("%.2f" % (alt_rel),LCD.LCD_LINE_2)
             csvwriter.writerow([a["x"], a["y"], a["z"], g["x"], g["y"], g["z"], temp, p, nanonum, t, yaw, pitch, roll, alt_rel, alt])
             print (a["x"], a["y"], a["z"], g["x"], g["y"], g["z"], temp, p, nanonum, t, yaw, pitch, roll, alt_rel, alt)
             csvfile.close()
